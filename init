@@ -19,8 +19,7 @@ echo "** 已生成 route-delete 脚本，此命令用于从路由表中删除chn
 # create the main script used by launcd on OS X
 echo "#!/bin/sh
 export PATH=\"/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$HOME/bin\"
-current_gw=\$(netstat -nr -f inet | grep UHLWIi | awk '{print \$1}')
-export \$current_gw
+export current_gw=\$(netstat -nr -f inet | grep UHLWIi | awk '{print \$1}')
 route_entries=\$(netstat -nr -f inet | sed '1,4d' | wc -l | xargs)
 pre_gw=\$(cat \$HOME/bin/pre_gw)
 if [ \"\${route_entries}\" -lt 1000 ];then
