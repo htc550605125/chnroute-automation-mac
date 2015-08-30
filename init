@@ -1,0 +1,86 @@
+#!/bin/sh
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/bin"
+echo "----本脚本用来创建自动化chnroute所需的文件----"
+# create route-add script ontop of chnroute.txt
+echo "#!/bin/sh
+dscacheutil -flushcache" > route-add
+for entry in `cat chnroute.txt` ; do echo "route -n add $entry \"\${current_gw}\"" >> route-add ; done
+echo "** 已生成 route-add 脚本，此命令用于将 chnroute 添加到路由表"
+# create route-change script ontop of chnroute.txt
+echo "#!/bin/sh
+dscacheutil -flushcache" > route-change
+for entry in `cat chnroute.txt` ; do echo "route -n change $entry \"\${current_gw}\"" >> route-change ; done
+echo "** 已生成 route-change 脚本，此命令用于更新 chnroute 到新的网关"
+# create route-delete script ontop of chnroute.txt
+echo "#!/bin/sh
+dscacheutil -flushcache" > route-delete
+for entry in `cat chnroute.txt` ; do echo "route -n delete $entry" >> route-delete ; done
+echo "** 已生成 route-delete 脚本，此命令用于从路由表中删除chnroute"
+# create the main script used by launcd on OS X
+echo "#!/bin/sh
+export PATH=\"/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$HOME/bin\"
+current_gw=\$(netstat -nr -f inet | grep UHLWIi | awk '{print \$1}')
+export \$current_gw
+route_entries=\$(netstat -nr -f inet | sed '1,4d' | wc -l | xargs)
+pre_gw=\$(cat \$HOME/bin/pre_gw)
+if [ \"\${route_entries}\" -lt 1000 ];then
+	if [ -n \"\${current_gw}\" ];then
+		\$HOME/bin/route-add
+		echo \"\${current_gw}\"| tee \$HOME/bin/pre_gw > /dev/null 2>&1
+	fi
+
+else
+	if [ -n \"\${current_gw}\" ];then
+		if [ \"\${current_gw}\" != \"\${pre_gw}\" ];then
+			\$HOME/bin/route-change
+			echo \"\${current_gw}\"| tee \$HOME/bin/pre_gw > /dev/null 2>&1
+		fi
+	fi
+fi
+exit 0" > route-auto
+echo "** 已生成 route-auto 脚本，此脚本是本项目的核心部分，它通过lanchd启动一次之后后，就能根据网络和路由的变化来全自动添加chnroute和更新chnroute到新的新的网关"
+# create the main launcd.plist file
+echo "<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>org.chnroute.automation</string>
+    <key>ProgramArguments</key>
+   	 <array>
+        	<string>/usr/bin/sudo</string>
+        	<string>$HOME/bin/route-auto</string>
+    	</array>
+    <key>KeepAlive</key>
+    	<false/>
+    <key>RunAtLoad</key>
+    	<false/>
+    <key>StandardErrorPath</key>
+         	<string>$HOME/chnroute.auto.log</string>
+    <key>StandardOutPath</key>
+         	<string>$HOME/chnroute.auto.log</string>
+    <key>WatchPaths</key>
+	<array>
+		<string>/Library/Preferences/SystemConfiguration</string>
+	</array>
+</dict>
+</plist>" > org.chnroute.automation.plist
+echo "** 已生成 org.chnroute.automation.plist 文件，此文件用于监控网络变化并启动 route-auto，并由后者判断如何进一步操作 "
+# create a blank pre_gw file only for the first time use, after that, just leave there.
+touch pre_gw
+echo "** 已生成 pre_gw ，此文件用于记录上一次改变路由表的时候的网关ip，route-auto 需要它来对网关做比较，首次生成，内容为空"
+# add excute permission
+chmod a+x route-add route-change route-delete route-auto
+echo "** 对生成的 route-add route-change route-delete route-auto 文件添加可执行权限 "
+# cp files to $HOME/bin
+# mkdir -p $HOME/bin
+# cp route-add route-change route-delete route-auto pre_gw $HOME/bin
+# cp org.chnroute.automation.plist $HOME/Library/LaunchAgents/
+# launchctl load -w $HOME/Library/LaunchAgents/org.chnroute.automation.plist
+# echo "add routes to your routing table, this may take 15 seconds"
+# sleep 15
+# echo "you have `netstat -nr -f inet | sed '1,4d' | wc -l | xargs` of routes now."
+# echo "will list all the routes in 2 seconds"
+# sleep 2
+# netstat -nr -f inet
+# exit 0
