@@ -3,17 +3,17 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/
 echo "----本脚本用来创建自动化chnroute所需的文件----"
 # create route-add script ontop of chnroute.txt
 echo "#!/bin/sh
-dscacheutil -flushcache" > route-add
+killall -HUP mDNSResponder" > route-add
 for entry in `cat chnroute.txt` ; do echo "route -n add $entry \"\${current_gw}\"" >> route-add ; done
 echo "** 已生成 route-add 脚本，此命令用于将 chnroute 添加到路由表"
 # create route-change script ontop of chnroute.txt
 echo "#!/bin/sh
-dscacheutil -flushcache" > route-change
+killall -HUP mDNSResponder" > route-change
 for entry in `cat chnroute.txt` ; do echo "route -n change $entry \"\${current_gw}\"" >> route-change ; done
 echo "** 已生成 route-change 脚本，此命令用于更新 chnroute 到新的网关"
 # create route-delete script ontop of chnroute.txt
 echo "#!/bin/sh
-dscacheutil -flushcache" > route-delete
+killall -HUP mDNSResponder" > route-delete
 for entry in `cat chnroute.txt` ; do echo "route -n delete $entry" >> route-delete ; done
 echo "** 已生成 route-delete 脚本，此命令用于从路由表中删除chnroute"
 # create the main script used by launcd on OS X
