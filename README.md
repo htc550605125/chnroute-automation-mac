@@ -9,7 +9,17 @@
 3. 如果当前系统路由的条目数量小于1000个，那么`chnroute`是肯定没有被添加过的（或者之前被删除过），此时`route-auto`这个脚本会获取当前网关，并开始调用 `route-add` 添加`chnroute`，同时将网关的ip写入`pre_gw`供下次用
 4. 如果系统路由条目大于1000，说明已经添加过`chnroute`，这时候会将当前的网关ip与`pre_gw`的对比，如果一样，则什么都不执行，如果不一样，则执行`route-change`改变已有的chnroute路由表到新的网关
 
+# 插曲
+我发现切换Wi-Fi的时候，只要开始与新的Wi-Fi握手成功，`/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist` 这个文件就会变化，但是这个时候还没有获取ip，而launchd就让route-auto执行了，执行的结果就是什么也不做，而等到获取到了ip，那个监控的文件却不再变化，所以route-auto不会再次执行，导致这个脚本失去意义。于是在route-auto的前面加上了如下代码，确保ip获取到了才执行其余下的代码。
 
+```Shell
+_date="date +%F-%H:%M:%S"
+until [ -n "`netstat -nr -f inet | grep UHLWIi`" ];do
+echo "`$_date` Gateway is not ready, keep trying every second"
+sleep 1
+done
+echo "`$_date` Gateway found, continue to work"
+```
 # 如何使用
 
 ```Shell
