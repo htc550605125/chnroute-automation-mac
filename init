@@ -53,7 +53,7 @@ echo "<?xml version="1.0" encoding="UTF-8"?>
     <key>KeepAlive</key>
     	<false/>
     <key>RunAtLoad</key>
-    	<false/>
+    	<true/>
     <key>StandardErrorPath</key>
          	<string>$HOME/chnroute.auto.log</string>
     <key>StandardOutPath</key>
