@@ -33,15 +33,60 @@ launchctl load -w $HOME/Library/LaunchAgents/org.chnroute.automation.plist
 ```
 搞定，以后就可以撒手不管了，只要电脑网关变化（与上一次对比），`chnroute`的条目自动适配到新的网关上，网关如果不变，则不会执行任何程序。
 
-# 如何Debug
-
-开两个终端窗口，一个运行 `tail -f $HOME/chnroute.auto.log` ，另外一个运行 `sudo tail -f /var/log/system.log | grep "route-"`, 然后试着开关网络，或者切换网络到不同的Wi-Fi热点（比如从路由器的Wi-Fi切换到手机热点上），第一个窗口可以看到`chnroute`是被`添加，改变 还是没反应`，第二个窗口可以看到`route-auto`在什么情况下触发（关闭Wi-Fi不会触发，只有Wi-Fi获取了网络，或者是改变了网络，这个才会触发）
-
 # 注意事项
 Mac上添加删除路由表是需要root权限的，为了让plist正常运行，需要设置 `sudoers`, 方法如下：
 
 1. 运行 `whoami` 得到你的账户名，比如justin
 2. 运行 `sudo visudo`，添加一行 `justin  ALL=(ALL) NOPASSWD: ALL`
+
+# 如何Debug
+
+开两个终端窗口，一个运行 `tail -f $HOME/chnroute.auto.log` ，另外一个运行 `sudo tail -f /var/log/system.log | grep "route-"`, 然后试着开关网络，或者切换网络到不同的Wi-Fi热点（比如从路由器的Wi-Fi切换到手机热点上），第一个窗口可以看到`chnroute`是被`添加，改变 还是没反应`，第二个窗口可以看到`route-auto`在什么情况下触发（关闭Wi-Fi不会触发，只有Wi-Fi获取了网络，或者是改变了网络，这个才会触发）
+
+# 效果
+
+这期间Wi-Fi从路由器切换到手机的个人热点，再切换回路由器，再切换到个人热点，再切换到路由器。多次切换，`chnroute`都能自动的适配到新的网关上去。（注意我把`route-add` `route-change`的输出重定向到了` > /dev/null 2>&1` 了，所以看不到那5000多条add和change的输出。），从log可以看出来，要完全add 或者 change chnroute，需要大约13s的时间，毕竟有接近6000条路由。
+
+`tail -f $HOME/chnroute.auto.log`
+
+```
+2015-08-31-21:34:38 Current Gateway is 192.168.12.1
+2015-08-31-21:39:38 Gateway is not ready, keep trying every second
+2015-08-31-21:39:40 Gateway is not ready, keep trying every second
+2015-08-31-21:39:41 Gateway is not ready, keep trying every second
+2015-08-31-21:39:42 Gateway is not ready, keep trying every second
+2015-08-31-21:39:43 Gateway is not ready, keep trying every second
+2015-08-31-21:39:44 Gateway is not ready, keep trying every second
+2015-08-31-21:39:45 Gateway is not ready, keep trying every second
+2015-08-31-21:39:47 Gateway is not ready, keep trying every second
+2015-08-31-21:39:48 Gateway is not ready, keep trying every second
+2015-08-31-21:39:49 Gateway is not ready, keep trying every second
+2015-08-31-21:39:50 Gateway is not ready, keep trying every second
+2015-08-31-21:39:51 Gateway is not ready, keep trying every second
+2015-08-31-21:39:52 Gateway found, continue to work
+2015-08-31-21:39:53 Changing chnroute ......
+2015-08-31-21:40:06 Changing chnroute done
+2015-08-31-21:40:06 Current Gateway is 172.20.10.1
+2015-08-31-21:40:43 Gateway is not ready, keep trying every second
+2015-08-31-21:40:44 Gateway found, continue to work
+2015-08-31-21:40:45 Changing chnroute ......
+2015-08-31-21:40:57 Changing chnroute done
+2015-08-31-21:40:57 Current Gateway is 192.168.12.1
+2015-08-31-21:43:00 Gateway is not ready, keep trying every second
+2015-08-31-21:43:02 Gateway is not ready, keep trying every second
+2015-08-31-21:43:03 Gateway is not ready, keep trying every second
+2015-08-31-21:43:04 Gateway is not ready, keep trying every second
+2015-08-31-21:43:05 Gateway found, continue to work
+2015-08-31-21:43:05 Changing chnroute ......
+2015-08-31-21:43:18 Changing chnroute done
+2015-08-31-21:43:18 Current Gateway is 172.20.10.1
+2015-08-31-21:44:16 Gateway found, continue to work
+2015-08-31-21:44:16 Changing chnroute ......
+2015-08-31-21:44:28 Changing chnroute done
+2015-08-31-21:44:28 Current Gateway is 192.168.12.1
+
+```
+
 
 # 如何删除`chnroute`
 首先你直接用本程序生成的 `route-delete` 删除是无效的，因为这个操作会被launchd监控到并执行`route-auto`，而`route-auto`发现`chnroute`被删了，就会运行`route-add`给添加回来，正确的删除方法是
