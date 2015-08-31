@@ -4,7 +4,7 @@
 **本脚本 Mac OS X Only**
 
 # 原理和逻辑
-1. `launchd`有一个功能，就是监控文件夹的变化来执行程序，此项目里面，我让launchd监控了： `/Library/Preferences/SystemConfiguration`,当网络变化的时候，这个文件夹一定会变化，而launchd能在秒级别里面检控到并执行程序
+1. `launchd`有一个功能`WatchPaths`，就是监控文件的变化来执行程序，此项目里面，我让launchd监控了： `/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist`,当Wi-Fi网络变化的时候，这个文件一定会变化，而launchd能在秒级别里面检控到并执行程序 (如果你用的不仅仅是Wi-Fi，请查找`/Library/Preferences/SystemConfiguration/`下对应的文件，并增加到plist的`WatchPaths`下面)
 2. launchd监控到网络变化，会执行`route-auto`这个脚本，而此脚本会发现当前网关并根据以下情况调用 `route-add` 或者 `route-change`。`route-add` 和 `route-change`的作用就如字面意思上那么简单，就是添加路由和改变路由。
 3. 如果当前系统路由的条目数量小于1000个，那么`chnroute`是肯定没有被添加过的（或者之前被删除过），此时`route-auto`这个脚本会获取当前网关，并开始调用 `route-add` 添加`chnroute`，同时将网关的ip写入`pre_gw`供下次用
 4. 如果系统路由条目大于1000，说明已经添加过`chnroute`，这时候会将当前的网关ip与`pre_gw`的对比，如果一样，则什么都不执行，如果不一样，则执行`route-change`改变已有的chnroute路由表到新的网关
