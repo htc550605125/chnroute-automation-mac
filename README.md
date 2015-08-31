@@ -9,6 +9,7 @@
 3. 如果当前系统路由的条目数量小于1000个，那么`chnroute`是肯定没有被添加过的（或者之前被删除过），此时`route-auto`这个脚本会获取当前网关，并开始调用 `route-add` 添加`chnroute`，同时将网关的ip写入`pre_gw`供下次用
 4. 如果系统路由条目大于1000，说明已经添加过`chnroute`，这时候会将当前的网关ip与`pre_gw`的对比，如果一样，则什么都不执行，如果不一样，则执行`route-change`改变已有的chnroute路由表到新的网关
 
+
 # 如何使用
 
 ```Shell
@@ -21,6 +22,10 @@ cp org.chnroute.automation.plist $HOME/Library/LaunchAgents/
 launchctl load -w $HOME/Library/LaunchAgents/org.chnroute.automation.plist
 ```
 搞定，以后就可以撒手不管了，只要电脑网关变化（与上一次对比），`chnroute`的条目自动适配到新的网关上，网关如果不变，则不会执行任何程序。
+
+# 如何Debug
+
+开两个终端窗口，一个运行 `tail -f $HOME/chnroute.auto.log` ，另外一个运行 `sudo tail -f /var/log/system.log | grep "route-"`, 然后试着开关网络，或者切换网络到不同的Wi-Fi热点（比如从路由器的Wi-Fi切换到手机热点上），第一个窗口可以看到`chnroute`是被`添加，改变 还是没反应`，第二个窗口可以看到`route-auto`在什么情况下触发（关闭Wi-Fi不会触发，只有Wi-Fi获取了网络，或者是改变了网络，这个才会触发）
 
 # 注意事项
 Mac上添加删除路由表是需要root权限的，为了让plist正常运行，需要设置 `sudoers`, 方法如下：
