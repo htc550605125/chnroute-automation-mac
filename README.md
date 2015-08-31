@@ -1,6 +1,7 @@
 # 这是什么
-chnroute的介绍见[chnroute](https://code.google.com/p/chnroutes/), 本项目`chnroute-automation-mac`的目的是自动化chnroute，只需要把它添加一次，以后无论网络怎么变化，`chnroute`会自动的被适配到新的网络环境中去。
-*** 本脚本 Mac OS X Only ***
+`chnroute`的介绍见[chnroute](https://code.google.com/p/chnroutes/), 本项目`chnroute-automation-mac`的目的是自动化`chnroute`，只需要把它添加一次，以后无论网络怎么变化，`chnroute`会自动的被适配到新的网络环境中去。
+
+**本脚本 Mac OS X Only**
 
 # 原理和逻辑
 1. `launchd`有一个功能，就是监控文件夹的变化来执行程序，此项目里面，我让launchd监控了： `/Library/Preferences/SystemConfiguration`,当网络变化的时候，这个文件夹一定会变化，而launchd能在秒级别里面检控到并执行程序
