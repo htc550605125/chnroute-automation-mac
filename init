@@ -18,6 +18,7 @@ for entry in `cat chnroute.txt` ; do echo "route -n delete $entry" >> route-dele
 echo "** 已生成 route-delete 脚本，此命令用于从路由表中删除chnroute"
 # create the main script used by launcd on OS X
 echo "#!/bin/sh
+sleep 3
 export PATH=\"/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$HOME/bin\"
 export current_gw=\$(netstat -nr -f inet | grep UHLWIi | awk '{print \$1}')
 route_entries=\$(netstat -nr -f inet | sed '1,4d' | wc -l | xargs)
