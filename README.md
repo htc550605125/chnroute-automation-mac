@@ -2,6 +2,8 @@
 `chnroute`的介绍见[chnroute](https://code.google.com/p/chnroutes/), 本项目`chnroute-automation-mac`的目的是自动化`chnroute`，只需要把它添加一次，以后无论网络怎么变化，`chnroute`会自动的被适配到新的网络环境中去。
 
 **本脚本 Mac OS X Only （原则上其思路可以用到Linux上，但是需要找到相应的实现方法，如果具备监控网络变化的工具，Linux上也可以实现这个功能）**
+# TODO
+经某同学提示，chnroute.txt 可以用 [cidrmerge](http://cidrmerge.sourceforge.net) 来合并一下的，可以将原来的5824条路由变成3757条，这样的话加载修改删除的速度就快很多了。有待测试这 3757条是否和chnroute的5824条包含的ip是否一样。
 
 # 解决了什么问题
 chnroute有以下问题：
