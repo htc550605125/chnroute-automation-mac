@@ -25,7 +25,7 @@ echo \"\`\$_date\` Gateway is not ready, keep trying every second\"
 sleep 1
 done
 echo \"\`\$_date\` Gateway found, continue to work\"
-export current_gw=\$(netstat -nr -f inet | grep UHLWIi | awk '{print \$1}')
+export current_gw=\$(netstat -nr | grep '^default' | grep -v 'ppp' | sed 's/default *\([0-9\.]*\) .*/\1/' | awk '{if(\$1){print \$1}}')
 route_entries=\$(netstat -nr -f inet | sed '1,4d' | wc -l | xargs)
 pre_gw=\$(cat \$HOME/bin/pre_gw)
 if [ \"\${route_entries}\" -lt 1000 ];then
